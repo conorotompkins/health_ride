@@ -4,7 +4,9 @@ library(tidyverse)
 library(ggraph)
 library(igraph)
 
-set.seed(1234)
+theme_set(theme_graph())
+
+set.seed(1)
 
 data_wide <- data_long %>% 
   spread(location_name_type, location_name)
@@ -49,9 +51,56 @@ simple_network <- data_wide %>%
   select(from_location, location_type, n) %>% 
   graph_from_data_frame()
 
-ggraph(simple_network) +
-  geom_edge_link(aes(width = n)) +
+ggraph(simple_network, layout = "graphopt") +
+  geom_edge_diagonal(aes(width = n),
+                     arrow = arrow(length = unit(3, 'mm')), 
+                     end_cap = circle(10, 'mm')) +
   geom_node_label(aes(label = name)) +
-  theme_graph()
-  
-  
+  scale_edge_width_continuous(range = c(1, 3)) +
+  labs(title = "Do most trips end at a different Healthy Ride station?")
+
+top_locations <- data %>% 
+  select(from_station_name) %>%
+  count(from_station_name, sort = TRUE) %>% 
+  top_n(10, n) %>% 
+  select(from_station_name) %>% 
+  unlist()
+
+top_locations[11:12] <- c("Same station", "Different station")
+
+#from_station_name = ifelse(from_station_name %in% top_locations, from_station_name, "the_rest")
+
+simple_network_2 <- data_wide %>% 
+  select(from_station_name, to_station_name) %>% 
+  mutate(is_same = ifelse(from_station_name == to_station_name, "Same station", "Different station")) %>%
+  mutate(from_location = "from_location") %>% 
+  select(from_station_name, is_same) %>% 
+  group_by(from_station_name, is_same) %>% 
+  summarize(number_of_rides = n()) %>% 
+  graph_from_data_frame()
+
+data_wide %>% 
+  select(from_station_name, to_station_name) %>% 
+  mutate(is_same = ifelse(from_station_name == to_station_name, "Same station", "Different station")) %>%
+  mutate(from_location = "from_location") %>% 
+  select(from_station_name, is_same) %>% 
+  group_by(from_station_name, is_same) %>% 
+  summarize(number_of_rides = n()) %>% 
+  select(from_station_name) %>% 
+  unique()
+
+V(simple_network_2)$name
+
+
+ggraph(simple_network_2, layout = "dh") +
+  geom_edge_diagonal(aes(edge_alpha = number_of_rides)) +
+  geom_node_label(aes(label = ifelse(name %in% top_locations,
+                                     V(simple_network_2)$name, "")),
+                  size = 3) +
+  scale_edge_alpha_continuous(range = c(.1, 1)) +
+  labs(title = "Do most trips start and end at different Healthy Ride stations?",
+       subtitle = "Only stations in the top 10 in terms of number of rides are labeled",
+       caption = "@conor_tompkins, data from wprdc.org")
+ggsave("healthy ride simple network.png", width = 20, height = 10)
+
+?geom_node_label

@@ -10,6 +10,8 @@ data_list <- lapply(data_list, read_csv)
 data <- bind_rows(data_list)
 
 colnames(data) <- tolower(colnames(data))
+colnames(data) <- gsub(" ", "_", colnames(data))
+
 data_long <- data %>% 
   mutate(start_date_time = starttime,
          stop_date_time = stoptime) %>%
@@ -23,16 +25,13 @@ data_long <- data %>%
          hour = hour(time),
          wday = wday(date, label = TRUE),
          is_weekday = ifelse(wday %in% c("Mon", "Tues", "Wed", "Thurs", "Fri"), "weekday", "weekend")) %>% 
-  mutate(from_station_id = `from station id`,
-         to_station_id = `to station id`,
-         from_station_name = `from station name`,
-         to_station_name = `to station name`) %>% 
   gather(location_id_type, location_id, c(from_station_id, to_station_id)) %>% 
   gather(location_name_type, location_name, c(from_station_name, to_station_name)) %>% 
   select(date_time_type, 
          is_weekday, 
          date, 
          time, 
+         hour,
          wday, 
          date_time_2, 
          location_id_type, 
@@ -41,24 +40,26 @@ data_long <- data %>%
          location_name,
          everything())
 
-table(data$is_weekday, data$wday)
+data_long
 
-data %>% 
+table(data_long$is_weekday, data_long$wday)
+
+data_long %>% 
   ggplot(aes(date, color = date_time_type)) +
   geom_freqpoly(stat = "density") +
   facet_wrap(~date_time_type,
              ncol = 1)
-data %>% 
+data_long %>% 
   ggplot(aes(hour, color = date_time_type)) +
   geom_freqpoly(stat = "density") +
   facet_wrap(~date_time_type,
              ncol = 1)
 
-data %>% 
+data_long %>% 
   ggplot(aes(hour, color = is_weekday)) +
   geom_freqpoly(stat = "density")
 
-data %>%
+data_long %>%
   ggplot(aes(hour, color = wday)) +
   geom_freqpoly(stat = "density") +
   facet_wrap(~wday, 
@@ -67,7 +68,10 @@ data %>%
 
 
 
-?mutate_at
-?separate_rows
-?starts_with
-?substr
+data_long %>% 
+  filter(location_name_type == "from_station_name") %>% 
+  arrange(date) %>% 
+  count(date) %>% 
+  mutate(cum_sum = cumsum(n)) %>% 
+  ggplot(aes(date, cum_sum)) +
+  geom_line()

@@ -59,6 +59,7 @@ data_long %>%
   ggplot(aes(hour, color = is_weekday)) +
   geom_freqpoly(stat = "density")
 
+#why are the weekends so weird?
 data_long %>%
   ggplot(aes(hour, color = wday)) +
   geom_freqpoly(stat = "density") +

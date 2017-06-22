@@ -92,7 +92,9 @@ data_wide %>%
 
 V(simple_network_2)$name
 
-
+#maybe people that start in The Strip and end somewhere else are parking in the strip and commuting downtowm?
+#facet by weekday/weekend
+#people might park at a bike trailhead, bike up and back to the same station, and leave. this could explain some heavy loops
 ggraph(simple_network_2, layout = "dh") +
   geom_edge_diagonal(aes(edge_alpha = number_of_rides)) +
   geom_node_label(aes(label = ifelse(name %in% top_locations,

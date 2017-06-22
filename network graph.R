@@ -51,6 +51,7 @@ simple_network <- data_wide %>%
   select(from_location, location_type, n) %>% 
   graph_from_data_frame()
 
+#get rid of "same location". try just having a loop
 ggraph(simple_network, layout = "graphopt") +
   geom_edge_diagonal(aes(width = n),
                      arrow = arrow(length = unit(3, 'mm')), 

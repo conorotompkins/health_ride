@@ -1,12 +1,8 @@
 rm(list = ls())
 
-theme_set(theme_bw())
-
 source("load_data.R")
 
-
-
-
+theme_set(theme_bw())
 
 predictions <- data_long %>% 
   group_by(month, date) %>% 
@@ -30,16 +26,24 @@ predictions %>%
   ggplot(aes(n, lag_1)) +
   geom_point() +
   geom_smooth() +
-  facet_wrap(~month)
+  facet_wrap(~month,
+             scales = "free") +
+  coord_equal()
 
-predictions %>% 
+prediction_stats <- predictions %>% 
   na.omit() %>% 
   group_by(month) %>% 
   summarize(cor = cor(n, lag_1)) %>% 
-  left_join(month_sums) %>% 
+  left_join(month_sums)
+
+prediction_stats %>% 
   ggplot(aes(cor, month_sum, label = month)) +
   geom_label() +
   geom_smooth()
+
+prediction_stats %>% 
+  ggplot(aes(month, cor)) +
+  geom_col()
 
 predictions_clean <- predictions %>% 
   na.omit()

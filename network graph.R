@@ -5,6 +5,7 @@ library(ggraph)
 library(igraph)
 
 theme_set(theme_graph())
+set_graph_style(foreground = 'grey80')
 
 set.seed(1)
 
@@ -72,11 +73,12 @@ top_locations[11:12] <- c("Same station", "Different station")
 #from_station_name = ifelse(from_station_name %in% top_locations, from_station_name, "the_rest")
 
 simple_network_2 <- data_wide %>% 
-  select(from_station_name, to_station_name) %>% 
+  select(from_station_name, to_station_name, is_weekday) %>% 
   mutate(is_same = ifelse(from_station_name == to_station_name, "Same station", "Different station")) %>%
   mutate(from_location = "from_location") %>% 
-  select(from_station_name, is_same) %>% 
-  group_by(from_station_name, is_same) %>% 
+  select(from_station_name, is_same, is_weekday) %>% 
+  #filter(from_station_name %in% top_locations) %>% 
+  group_by(from_station_name, is_same, is_weekday) %>% 
   summarize(number_of_rides = n()) %>% 
   graph_from_data_frame()
 
@@ -90,20 +92,20 @@ data_wide %>%
   select(from_station_name) %>% 
   unique()
 
-V(simple_network_2)$name
 
 #maybe people that start in The Strip and end somewhere else are parking in the strip and commuting downtowm?
 #facet by weekday/weekend
 #people might park at a bike trailhead, bike up and back to the same station, and leave. this could explain some heavy loops
 ggraph(simple_network_2, layout = "dh") +
   geom_edge_diagonal(aes(edge_alpha = number_of_rides)) +
+  #geom_edge_density(aes(fill = is_same)) + 
   geom_node_label(aes(label = ifelse(name %in% top_locations,
                                      V(simple_network_2)$name, "")),
                   size = 3) +
   scale_edge_alpha_continuous(range = c(.1, 1)) +
-  labs(title = "Do most trips start and end at different Healthy Ride stations?",
+  facet_edges(~is_weekday,
+              ncol = 2) +
+    labs(title = "Do most trips start and end at different Healthy Ride stations?",
        subtitle = "Only stations in the top 10 in terms of number of rides are labeled",
        caption = "@conor_tompkins, data from wprdc.org")
-ggsave("healthy ride simple network.png", width = 20, height = 10)
-
-?geom_node_label
+ggsave("healthy ride simple network is_weekday.png", width = 20, height = 10)

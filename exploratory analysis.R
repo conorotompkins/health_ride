@@ -95,5 +95,10 @@ data_long %>%
   facet_wrap(~year,
              ncol = 1)
 
-
-?lubridate
+#trying violin plot  with Chrissie loves and snuggles. VERY INEFFECTIVE. MUCH DISTRATCTION. SO SNUGGLY.
+data_long %>%
+  group_by(date) %>% 
+  count() %>% 
+  ggplot(aes(date, n)) +
+  geom_violin() +
+  geom_point()

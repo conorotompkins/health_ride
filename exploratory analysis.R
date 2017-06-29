@@ -120,4 +120,13 @@ data_long %>%
   facet_grid(year ~ month) +
   coord_equal() +
   scale_fill_viridis()
-  
+
+data_long %>% 
+  ggplot(aes(x = week, group = id)) +
+  geom_boxplot(stat = "count")
+  ?geom_boxplot
+
+data_long %>% 
+  ggplot(aes(week, tripduration, group = date)) +
+  #geom_boxplot() +
+  geom_smooth()

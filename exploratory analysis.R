@@ -1,10 +1,12 @@
 library(tidyverse)
 library(lubridate)
+library(viridis)
 
 theme_set(theme_bw())
 
 rm(list = ls())
 
+source("load_data.R")
 data_long
 
 table(data_long$is_weekday, data_long$wday)
@@ -97,8 +99,25 @@ data_long %>%
 
 #trying violin plot  with Chrissie loves and snuggles. VERY INEFFECTIVE. MUCH DISTRATCTION. SO SNUGGLY.
 data_long %>%
+  filter(year == 2016) %>% 
   group_by(date) %>% 
-  count() %>% 
-  ggplot(aes(date, n)) +
+  mutate(n = n()) %>% 
+  ggplot(aes(x = week, y = n, fill = is_weekday)) +
+  geom_point(alpha = .5) +
   geom_violin() +
-  geom_point()
+  facet_wrap(~is_weekday, 
+             ncol = 2)
+
+dev.off()
+
+data_long %>% 
+  group_by(year, month, mday, hour) %>% 
+  summarize(n = n()) %>% 
+  ggplot(aes(mday, hour, fill = n)) +
+  geom_tile() +
+  scale_y_reverse(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +
+  facet_grid(year ~ month) +
+  coord_equal() +
+  scale_fill_viridis()
+  

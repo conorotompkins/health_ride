@@ -23,6 +23,7 @@ data_long <- data %>%
   mutate(date = mdy(date),
          year = year(date),
          month = month(date, label = TRUE),
+         week = week(date),
          time = hm(time),
          hour = hour(time),
          wday = wday(date, label = TRUE),

@@ -20,7 +20,8 @@ data_long <- data %>%
   select(date_time_type, date_time, everything()) %>% 
   mutate(date_time_2 = date_time) %>% 
   separate(date_time, " ", into = c("date", "time")) %>% 
-  mutate(date = mdy(date),
+  mutate(id = row_number(),
+         date = mdy(date),
          year = year(date),
          month = month(date, label = TRUE),
          week = week(date),

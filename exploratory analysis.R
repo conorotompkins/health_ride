@@ -137,3 +137,27 @@ data_long %>%
   mutate(cum_sum = cumsum(trip_duration_sum)) %>% 
   ggplot(aes(date, cum_sum)) +
   geom_line()
+
+data_long %>%
+  select(year, month, mday, hour, trip_duration) %>% 
+  group_by(year, month, mday, hour) %>% 
+  summarize(trip_duration_sum = sum(trip_duration)) %>% 
+ggplot(aes(mday, hour, fill = trip_duration_sum)) +
+  geom_tile() +
+  scale_y_reverse(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +
+  facet_grid(year ~ month) +
+  coord_equal() +
+  scale_fill_viridis()
+
+data_long %>%
+  select(year, month, mday, hour, trip_duration) %>% 
+  group_by(year, month, mday, hour) %>% 
+  summarize(trip_duration_sum = sum(trip_duration)) %>% 
+  ggplot(aes(mday, hour, fill = trip_duration_sum)) +
+  geom_tile() +
+  scale_y_reverse(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0,0)) +
+  facet_grid(year ~ month) +
+  coord_equal() +
+  scale_fill_viridis()

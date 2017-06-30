@@ -127,6 +127,13 @@ data_long %>%
   ?geom_boxplot
 
 data_long %>% 
-  ggplot(aes(week, tripduration, group = date)) +
-  #geom_boxplot() +
-  geom_smooth()
+  ggplot(aes(week, tripduration, group = id)) +
+  geom_boxplot()
+
+data_long %>%
+  select(date, trip_duration) %>% 
+  group_by(date) %>% 
+  summarize(trip_duration_sum = sum(trip_duration)) %>% 
+  mutate(cum_sum = cumsum(trip_duration_sum)) %>% 
+  ggplot(aes(date, cum_sum)) +
+  geom_line()

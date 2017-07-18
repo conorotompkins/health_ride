@@ -34,7 +34,7 @@ data_long %>%
 
 data_long %>%
   ggplot(aes(hour, color = wday)) +
-  geom_freqpoly() +
+  geom_freqpoly(bins = 30) +
   scale_x_continuous(breaks = c(0:23))
 
 data_long %>%
@@ -124,11 +124,12 @@ data_long %>%
 data_long %>% 
   ggplot(aes(x = week, group = id)) +
   geom_boxplot(stat = "count")
+
   ?geom_boxplot
 
-data_long %>% 
-  ggplot(aes(week, tripduration, group = id)) +
-  geom_boxplot()
+#data_long %>% 
+#  ggplot(aes(week, tripduration, group = id)) +
+#  geom_boxplot()
 
 data_long %>%
   select(date, trip_duration) %>% 

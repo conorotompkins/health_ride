@@ -99,15 +99,15 @@ data_long %>%
 
 #trying violin plot  with Chrissie loves and snuggles. VERY INEFFECTIVE. MUCH DISTRATCTION. SO SNUGGLY.
 #takes forever to load and is wrong
-data_long %>%
-  filter(year == 2016) %>% 
-  group_by(date) %>% 
-  mutate(n = n()) %>% 
-  ggplot(aes(x = week, y = n, fill = is_weekday)) +
-  geom_point(alpha = .5) +
-  geom_violin() +
-  facet_wrap(~is_weekday, 
-             ncol = 2)
+#data_long %>%
+#  filter(year == 2016) %>% 
+#  group_by(date) %>% 
+#  mutate(n = n()) %>% 
+#  ggplot(aes(x = week, y = n, fill = is_weekday)) +
+#  geom_point(alpha = .5) +
+#  geom_violin() +
+#  facet_wrap(~is_weekday, 
+#             ncol = 2)
 
 dev.off()
 
@@ -122,11 +122,11 @@ data_long %>%
   coord_equal() +
   scale_fill_viridis()
 
+#takes a long time to run
 data_long %>% 
   ggplot(aes(x = week, group = id)) +
   geom_boxplot(stat = "count")
 
-  ?geom_boxplot
 
 #data_long %>% 
 #  ggplot(aes(week, tripduration, group = id)) +

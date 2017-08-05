@@ -31,7 +31,7 @@ data_long <- data %>%
          is_weekday = ifelse(wday %in% c("Mon", "Tues", "Wed", "Thurs", "Fri"), "weekday", "weekend"),
          yday = yday(date),
          mday = mday(date)) %>% 
-  mutate(trip_duration = tripduration / 60) %>% 
+  mutate(trip_duration = (tripduration / 60) / 60) %>% 
   gather(location_id_type, location_id, c(from_station_id, to_station_id)) %>% 
   gather(location_name_type, location_name, c(from_station_name, to_station_name)) %>% 
   select(date_time_type, 

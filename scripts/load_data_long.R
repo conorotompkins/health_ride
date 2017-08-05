@@ -50,6 +50,3 @@ data_long <- data %>%
          location_name_type,
          location_name,
          everything())
-
-data_wide <- data_long %>% 
-  spread(location_name_type, location_name)

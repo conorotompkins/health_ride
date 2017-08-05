@@ -4,8 +4,9 @@ library(lubridate)
 theme_set(theme_bw())
 
 rm(list = ls())
-
-data_list <- list.files(pattern = ".csv")
+data_path <- "./data"
+data_list <- list.files(path = "./data", pattern = ".csv")
+data_list <- paste0(data_path, "/", data_list)
 data_list <- lapply(data_list, read_csv)
 data <- bind_rows(data_list)
 

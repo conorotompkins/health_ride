@@ -6,7 +6,7 @@ theme_set(theme_bw())
 
 rm(list = ls())
 
-source("load_data.R")
+source("scripts/load_data_long.R")
 data_long
 
 table(data_long$is_weekday, data_long$wday)

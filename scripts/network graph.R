@@ -1,5 +1,3 @@
-#install.packages("ggraph")
-
 library(tidyverse)
 library(ggraph)
 library(igraph)
@@ -8,6 +6,13 @@ theme_set(theme_graph())
 set_graph_style(foreground = 'grey80')
 
 set.seed(1)
+
+rm(list = ls())
+
+source("scripts/load_data_long.R")
+data_long
+
+
 
 data_wide <- data_long %>% 
   spread(location_name_type, location_name)

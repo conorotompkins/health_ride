@@ -98,6 +98,7 @@ data_long %>%
              ncol = 1)
 
 #trying violin plot  with Chrissie loves and snuggles. VERY INEFFECTIVE. MUCH DISTRATCTION. SO SNUGGLY.
+#takes forever to load and is wrong
 data_long %>%
   filter(year == 2016) %>% 
   group_by(date) %>% 
@@ -162,3 +163,31 @@ data_long %>%
   facet_grid(year ~ month) +
   coord_equal() +
   scale_fill_viridis()
+
+data_long %>% 
+  ggplot(aes(trip_duration)) +
+  #geom_density() +
+  #geom_histogram(bins = 100) +
+  geom_freqpoly(binwidth = 1)
+
+data_long %>% 
+  filter(trip_duration >= 1) %>% 
+  ggplot(aes(trip_duration)) +
+  #geom_density() +
+  #geom_histogram(bins = 100) +
+  geom_freqpoly(binwidth = 1) +
+  geom_vline(xintercept = 24, color = "red", linetype = 2) +
+  #coord_cartesian(ylim = c(0, 10^4)) +
+  facet_wrap(~location_name)
+
+summary(data_long$trip_duration)
+
+data_long %>% 
+  mutate(trip_duration = round(trip_duration, digits = 0)) %>% 
+  count(month, location_name, trip_duration) %>% 
+  ggplot(aes(location_name, trip_duration, fill = log10(n))) +
+  geom_tile() + 
+  facet_wrap(~month,
+             nrow = 1) +
+  coord_equal() +
+  theme(axis.text.x = element_blank())

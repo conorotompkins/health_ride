@@ -8,43 +8,49 @@ rm(list = ls())
 
 source("scripts/load_data_long.R")
 data_long
+rm(data)
 
 table(data_long$is_weekday, data_long$wday)
 
 data_long %>% 
+  filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(date, color = date_time_type)) +
-  geom_freqpoly(stat = "density") +
-  facet_wrap(~date_time_type,
-             ncol = 1)
-data_long %>% 
-  ggplot(aes(hour, color = date_time_type)) +
-  geom_freqpoly(stat = "density") +
-  facet_wrap(~date_time_type,
-             ncol = 1)
+  geom_freqpoly(stat = "density")
 
 data_long %>% 
+  filter(date_time_type == "start_date_time") %>% 
+  ggplot(aes(hour, color = date_time_type)) +
+  geom_freqpoly(stat = "density")
+
+data_long %>% 
+  filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = is_weekday)) +
   geom_freqpoly(stat = "density")
 
 #why are the weekends so weird?
 data_long %>%
+  filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = wday)) +
   geom_freqpoly(stat = "density") +
   scale_x_continuous(breaks = c(0:23))
 
 data_long %>%
+  filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = wday)) +
-  geom_freqpoly(bins = 30) +
+  geom_freqpoly(binwidth = 1) +
   scale_x_continuous(breaks = c(0:23))
 
 data_long %>%
+  filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = is_weekday)) +
   geom_freqpoly(stat = "density") +
   scale_x_continuous(breaks = c(0:23))
 
 data_long %>%
+  filter(date_time_type == "start_date_time") %>% 
+  select(hour, is_weekday) %>% 
   ggplot(aes(hour, color = is_weekday)) +
-  geom_freqpoly() +
+  geom_freqpoly(bindwidth = 10) +
   scale_x_continuous(breaks = c(0:23))
 
 
@@ -170,8 +176,16 @@ data_long %>%
   #geom_histogram(bins = 100) +
   geom_freqpoly(binwidth = 1)
 
+locations_sd <- data_long %>% 
+  group_by(location_name) %>% 
+  summarize(location_sd = sd(trip_duration)) %>% 
+  arrange(desc(location_sd)) %>% 
+  select(location_name) %>% 
+  unlist()
+
 data_long %>% 
   filter(trip_duration >= 1) %>% 
+  mutate(location_name = factor(location_name, levels = locations_sd)) %>% 
   ggplot(aes(trip_duration)) +
   #geom_density() +
   #geom_histogram(bins = 100) +

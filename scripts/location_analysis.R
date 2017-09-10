@@ -9,13 +9,12 @@ source("scripts/load_stations_data.R")
 
 rm(list = c("data", "data_list"))
 
-data_long %>% 
-  select(location_name_type, location_name) %>% 
-  count(location_name_type, location_name, sort = TRUE)
+data_long <- data_long %>% 
+  filter(date >= "2017-06-01") %>% 
+  select(date, location_name_type, location_name)
 
 df_locations <- data_long %>% 
-  select(location_name_type, location_name) %>%
-  group_by(row_number, location_name_type, location_name) %>% 
+  group_by(location_name_type, location_name) %>% 
   mutate(row_number = row_number()) %>%
   spread(location_name_type, location_name)
 

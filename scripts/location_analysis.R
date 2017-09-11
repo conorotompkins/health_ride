@@ -1,4 +1,7 @@
+install.packages("ggmap")
+
 library(tidyverse)
+library(ggmap)
 
 theme_set(theme_bw())
 
@@ -9,31 +12,48 @@ source("scripts/load_stations_data.R")
 
 rm(list = c("data", "data_list"))
 
-data_long <- data_long %>% 
-  filter(date >= "2017-06-01") %>% 
-  select(date, location_name_type, location_name)
+data_wide <- data_long %>% 
+  select(-c(latitude, longitude)) %>% 
+  #select(location_name_type, location_name) %>% 
+  spread(location_name_type, location_name) %>% 
+  left_join(locations, by = c("from_station_name" = "station_name")) %>%
+  rename(from_latitude = latitude,
+         from_longitude = longitude) %>% 
+  left_join(locations, by = c("to_station_name" = "station_name")) %>% 
+  rename(to_latitude = latitude,
+         to_longitude = longitude) %>% 
+  select(from_station_name, to_station_name, to_longitude, to_latitude, from_longitude, from_latitude)
 
-df_locations <- data_long %>% 
-  group_by(location_name_type, location_name) %>% 
-  mutate(row_number = row_number()) %>%
-  spread(location_name_type, location_name)
 
-
-filter(!is.na(to_station_name), !is.na(from_station_name))
-
-group_by(location_name_type, location_name) %>% 
+df_locations <- data_wide %>% 
+  group_by(from_station_name, to_station_name, from_longitude, from_latitude, to_longitude, to_latitude) %>% 
   summarise(number_of_trips = n()) %>% 
-  arrange(desc(number_of_trips)) %>% 
-  
-  
-  
-  
+  arrange(desc(number_of_trips))
 
-df_locations <- df_locations %>% 
-  left_join(locations, by = c("location_name" = "station_name")) %>% 
-  select(location_name_type, location_name, latitude, longitude)
+pgh_map <- get_map(location = "The Hill Pittsburgh, PA", zoom = 13)
+pgh_map <- ggmap(pgh_map)
 
-rm(data_long)
+
+
+pgh_map +
+  geom_point(data = df_locations, aes(from_longitude, from_latitude)) +
+  geom_point(data = df_locations, aes(to_longitude, to_latitude)) +
+  geom_segment(data = df_locations, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
+  scale_alpha_continuous(range = c(.01, 1)) +
+  scale_size_continuous(range = c(.1, 5)) +
+  theme_minimal()
+
+df_location_test <- df_locations %>% 
+  filter(from_station_name == "Liberty Ave & Stanwix St")
+
+pgh_map +
+  geom_point(data = df_location_test, aes(from_longitude, from_latitude)) +
+  geom_point(data = df_location_test, aes(to_longitude, to_latitude)) +
+  geom_curve(data = df_location_test, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
+  scale_alpha_continuous(range = c(.3, 1)) +
+  scale_size_continuous(range = c(.1, 3)) +
+  theme_minimal()
+
   
-df_locations <- df_locations %>% 
-  
+?geom_segment
+?geom_curve

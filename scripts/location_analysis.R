@@ -48,12 +48,15 @@ df_location_test <- df_locations %>%
 
 pgh_map +
   geom_point(data = df_location_test, aes(from_longitude, from_latitude)) +
-  geom_point(data = df_location_test, aes(to_longitude, to_latitude)) +
-  geom_curve(data = df_location_test, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
-  scale_alpha_continuous(range = c(.3, 1)) +
-  scale_size_continuous(range = c(.1, 3)) +
+  geom_point(data = df_location_test, aes(to_longitude, to_latitude, size = number_of_trips)) +
+  geom_segment(data = df_location_test, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips)) +
+  scale_alpha_continuous(range = c(.5, 1)) +
+  #scale_size_continuous(range = c(.1, 3)) +
+  #coord_cartesian() +
   theme_minimal()
 
-  
+
+#think about faceting by month, wday, hour
+?arrow
 ?geom_segment
 ?geom_curve

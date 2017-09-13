@@ -4,8 +4,8 @@ library(lubridate)
 theme_set(theme_bw())
 
 rm(list = ls())
-data_path <- "./data"
-data_list <- list.files(path = "./data", pattern = ".csv")
+data_path <- "./data/ride_data"
+data_list <- list.files(path = data_path, pattern = ".csv")
 data_list <- paste0(data_path, "/", data_list)
 data_list <- lapply(data_list, read_csv)
 data <- bind_rows(data_list)
@@ -33,8 +33,8 @@ data_long <- data %>%
          yday = yday(date),
          mday = mday(date)) %>% 
   mutate(trip_duration = (tripduration / 60) / 60) %>% 
-  gather(location_id_type, location_id, c(from_station_id, to_station_id)) %>% 
-  gather(location_name_type, location_name, c(from_station_name, to_station_name)) %>% 
+  gather(station_id_type, station_id, c(from_station_id, to_station_id)) %>% 
+  gather(station_name_type, station_name, c(from_station_name, to_station_name)) %>% 
   select(date_time_type, 
          is_weekday, 
          date, 
@@ -46,8 +46,8 @@ data_long <- data %>%
          yday,
          mday,
          date_time_2, 
-         location_id_type, 
-         location_id, 
-         location_name_type,
-         location_name,
+         station_id_type, 
+         station_id, 
+         station_name_type,
+         station_name,
          everything())

@@ -74,6 +74,30 @@ top_from_stations <- df_wide %>%
   select(from_station_name) %>% 
   unlist()
 
+df_wide_day <- data_long %>% 
+  spread(station_name_type, station_name) %>% 
+  select(from_station_name, to_station_name, is_weekday) %>% 
+  left_join(data_stations, by = c("from_station_name" = "station_name")) %>%
+  rename(from_latitude = latitude,
+         from_longitude = longitude) %>% 
+  left_join(data_stations, by = c("to_station_name" = "station_name")) %>% 
+  rename(to_latitude = latitude,
+         to_longitude = longitude) %>% 
+  group_by(is_weekday, from_station_name, to_station_name, from_longitude, from_latitude, to_longitude, to_latitude) %>% 
+  summarise(number_of_trips = n()) %>% 
+  arrange(desc(number_of_trips)) %>% 
+  mutate(from_station_type = ifelse(from_station_name == to_station_name,
+                                    "Same station", "Different station"))
+
+
+pgh_map +
+  geom_point(data = df_wide_day, aes(from_longitude, from_latitude)) +
+  geom_point(data = df_wide_day, aes(to_longitude, to_latitude)) +
+  geom_segment(data = df_wide, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
+  scale_alpha_continuous(range = c(.05, 1)) +
+  scale_size_continuous(range = c(.05, 5)) +
+  facet_wrap(~is_weekday) +
+  theme_minimal()
 
 #identify mismatch station names
 df_station_data <- data_long %>% 

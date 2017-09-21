@@ -74,6 +74,23 @@ top_from_stations <- df_wide %>%
   select(from_station_name) %>% 
   unlist()
 
+
+#identify mismatch station names
+df_station_data <- data_long %>% 
+  select(station_name) %>% 
+  group_by(station_name) %>% 
+  summarize(number_of_trips = n()) %>% 
+  arrange(desc(number_of_trips))
+
+df_station_names <- data_stations %>% 
+  ungroup() %>% 
+  #select(station_name) %>% 
+  unique()
+
+df_mismatch <- df_station_data %>% 
+  left_join(df_station_names) %>% 
+  filter(is.na(latitude))
+
 #i want to color by station_name_type, but still be able to select certain from_stations for faceting
 df_station_facet <- df_long %>% 
   ungroup() %>% 

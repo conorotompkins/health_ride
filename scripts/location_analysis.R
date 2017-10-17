@@ -1,5 +1,6 @@
 library(tidyverse)
 library(ggmap)
+library(gghighlight)
 
 theme_set(theme_bw())
 
@@ -14,7 +15,10 @@ df_station_totals <- data_long %>%
   group_by(station_name) %>% 
   summarize(number_of_trips = n()) %>% 
   arrange(desc(number_of_trips)) %>% 
-  left_join(data_stations)
+  left_join(data_stations) %>% 
+  select(station_name, number_of_trips, longitude, latitude)
+
+df_station_totals
 
 pgh_map <- get_map(location = "The Hill Pittsburgh, PA", zoom = 13)
 pgh_map <- ggmap(pgh_map)
@@ -31,6 +35,21 @@ df_long <- data_long %>%
   summarize(number_of_trips = n()) %>% 
   arrange(desc(number_of_trips)) %>% 
   left_join(data_stations)
+
+df_from_to <- df_long %>% 
+  spread(station_name_type, number_of_trips) %>% 
+  rename(from_trips = from_station_name,
+         to_trips = to_station_name) %>% 
+  select(from_trips, to_trips) %>% 
+  mutate(differential = abs(from_trips - to_trips))
+
+#use the stations with large differentials as jumping off points in the network map
+df_from_to %>% 
+  gghighlight_point(aes(from_trips, to_trips), label_key = station_name, differential > 4000) +
+  scale_x_continuous(limits = c(0, 45000)) +
+  scale_y_continuous(limits = c(0, 45000)) +
+  coord_equal() +
+  geom_abline()
   
 pgh_map +
   geom_point(data = df_long, aes(longitude, latitude, size = number_of_trips, color = station_name_type),

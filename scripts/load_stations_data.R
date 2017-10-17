@@ -7,5 +7,5 @@ for (i in seq_along(data_list)) {
   colnames(data_list[[i]]) <- c("station_number", "station_name", "number_of_racks", "latitude", "longitude")
 }
 
-data_stations <- bind_rows(data_list) %>% 
+data_station_locations <- bind_rows(data_list) %>% 
   distinct()

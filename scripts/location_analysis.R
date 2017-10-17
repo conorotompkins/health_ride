@@ -14,8 +14,8 @@ rm(list = c("data", "data_list"))
 df_station_totals <- data_long %>% 
   group_by(station_name) %>% 
   summarize(number_of_trips = n()) %>% 
-  arrange(desc(number_of_trips)) %>% 
-  left_join(data_stations) %>% 
+  arrange(desc(number_of_trips), station_name) %>% 
+  left_join(data_station_locations) %>% 
   select(station_name, number_of_trips, longitude, latitude)
 
 df_station_totals
@@ -170,10 +170,6 @@ df_stations <- data_wide %>%
   left_join(df_station_visits, by = c("from_station_name" = "station_name"))
 
 
-
-
-
-
 pgh_map +
   geom_point(data = df_stations, aes(from_longitude, from_latitude)) +
   geom_point(data = df_stations, aes(to_longitude, to_latitude)) +
@@ -182,8 +178,6 @@ pgh_map +
   scale_size_continuous(range = c(.1, 5)) +
   theme_minimal()
 ggsave("images/ride_map.png")
-
-
 
 pgh_map +
   geom_point(data = df_station_facet, aes(from_longitude, from_latitude, size = number_of_trips, color = station_type)) +

@@ -1,6 +1,7 @@
 library(tidyverse)
 library(lubridate)
 library(viridis)
+library(scales)
 
 theme_set(theme_bw())
 
@@ -14,7 +15,7 @@ table(data_long$is_weekday, data_long$wday)
 
 data_long %>% 
   filter(date_time_type == "start_date_time") %>% 
-  ggplot(aes(date, color = date_time_type)) +
+  ggplot(aes(date)) +
   geom_freqpoly(stat = "density")
 
 data_long %>% 
@@ -25,7 +26,15 @@ data_long %>%
 data_long %>% 
   filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = is_weekday)) +
-  geom_freqpoly(stat = "count")
+  geom_freqpoly(stat = "count") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(breaks = 0:23) +
+  labs(x = "Hour",
+       y = "Number of rides",
+       title = "Healthy Ride Pittsburgh",
+       caption = "@conor_tompkins") +
+  theme(panel.grid.minor = element_blank())
+#ggsave("images/Healthy Ride Pittsburgh weekday vs weekend.png")
 
 #why are the weekends so weird?
 data_long %>%
@@ -33,6 +42,7 @@ data_long %>%
   ggplot(aes(hour, color = wday)) +
   geom_freqpoly(stat = "count") +
   scale_x_continuous(breaks = c(0:23))
+
 
 #duplicate
 data_long %>%

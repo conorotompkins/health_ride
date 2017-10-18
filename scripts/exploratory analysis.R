@@ -19,21 +19,22 @@ data_long %>%
 
 data_long %>% 
   filter(date_time_type == "start_date_time") %>% 
-  ggplot(aes(hour, color = date_time_type)) +
-  geom_freqpoly(stat = "density")
+  ggplot(aes(hour)) +
+  geom_freqpoly(stat = "count")
 
 data_long %>% 
   filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = is_weekday)) +
-  geom_freqpoly(stat = "density")
+  geom_freqpoly(stat = "count")
 
 #why are the weekends so weird?
 data_long %>%
   filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = wday)) +
-  geom_freqpoly(stat = "density") +
+  geom_freqpoly(stat = "count") +
   scale_x_continuous(breaks = c(0:23))
 
+#duplicate
 data_long %>%
   filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = wday)) +
@@ -43,7 +44,7 @@ data_long %>%
 data_long %>%
   filter(date_time_type == "start_date_time") %>% 
   ggplot(aes(hour, color = is_weekday)) +
-  geom_freqpoly(stat = "density") +
+  geom_freqpoly(stat = "count") +
   scale_x_continuous(breaks = c(0:23))
 
 data_long %>%
@@ -56,7 +57,7 @@ data_long %>%
 
 
 data_long %>% 
-  filter(location_name_type == "from_station_name") %>% 
+  filter(station_name_type == "from_station_name") %>% 
   arrange(date) %>% 
   count(date) %>% 
   mutate(cum_sum = cumsum(n)) %>% 

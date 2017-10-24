@@ -15,9 +15,9 @@ data_long
 
 
 data_wide <- data_long %>% 
-  spread(location_name_type, location_name)
+  spread(station_name_type, station_name)
 
-top_locations <- data %>% 
+top_stations <- data %>% 
   select(from_station_name) %>%
   count(from_station_name, sort = TRUE) %>% 
   top_n(3, n) %>% 
@@ -26,7 +26,7 @@ top_locations <- data %>%
 
 network_data <- data_wide %>% 
   select(from_station_name, to_station_name) %>% 
-  filter(from_station_name %in% top_locations) %>% 
+  filter(from_station_name %in% top_stations) %>% 
   count(from_station_name, to_station_name, sort = TRUE)
 
 network_data %>% 

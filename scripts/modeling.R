@@ -1,28 +1,31 @@
+library(tidyverse)
 library(modelr)
 library(broom)
-sum(is.na(df$usertype))
+
+options(scipen = 999)
+
 df <- data_long %>% 
   filter(station_name_type == "from_station_name") %>% 
   #filter(!is.na(usertype)) %>% 
-  group_by(year, month, week, yday, wday, station_name) %>% 
-  summarize(n = n()) %>% 
-  mutate(n_lag1 = lag(n)) %>% 
-  filter(!is.na(n_lag1))
+  group_by(mday, month, wday) %>% 
+  summarize(n = n())
 df
-model1 <- lm(n ~ year + month + week + wday + station_name + n_lag1, data = df)
+
+#sum(is.na(df$usertype))
+model1 <- lm(n ~ month + wday, data = df)
 
 df <- df %>% 
   add_predictions(model1) %>% 
   add_residuals(model1)
-df
+summary(model1)
 
 
 df %>% 
-  ggplot(aes(yday, resid)) +
+  ggplot(aes(mday, resid)) +
+  geom_hline(yintercept = 0) +
   geom_point() +
-  geom_smooth() +
-  facet_wrap(~year,
-             ncol = 1)
+  #geom_smooth() +
+  facet_wrap(~month)
 
 df %>% 
   ggplot(aes(n, pred)) +

@@ -1,2 +1,2 @@
 data_wide <- data_long %>% 
-  spread(location_name_type, location_name)
+  spread(station_name_type, station_name)

@@ -2,53 +2,76 @@ library(tidyverse)
 library(modelr)
 library(broom)
 
-options(scipen = 999)
+options(scipen = 99)
 
-df <- data_long %>% 
-  filter(station_name_type == "from_station_name") %>% 
+
+df_holidays <- read_csv("data/holidays.csv") %>% 
+  mutate(date = mdy(date))
+df_holidays
+
+df <- data_wide %>% 
+  mutate(month = factor(month,  ordered = FALSE),
+         wday = factor(wday, ordered = FALSE)) %>% 
+  #filter(station_name_type == "from_station_name") %>% 
   #filter(!is.na(usertype)) %>% 
-  group_by(mday, month, wday) %>% 
-  summarize(n = n())
+  group_by(date, year, yday, month, wday, from_station_name) %>% 
+  summarize(number_of_rides = n()) %>% 
+  left_join(df_holidays) %>% 
+  replace_na(replace = list(holiday = "none"))
 df
+class(df$month)
+class(df$wday)
+unique(df$holiday)
 
 #sum(is.na(df$usertype))
-model1 <- lm(n ~ month + wday, data = df)
+model1 <- lm(number_of_rides ~ month + wday, data = df)
+model2 <- lm(number_of_rides ~ year + month + wday, data = df)
+model3 <- lm(number_of_rides ~ year + month * wday, data = df)
+model4 <- lm(number_of_rides ~ year + month * wday + holiday, data = df)
+model5 <- lm(number_of_rides ~ year + month * wday + holiday + from_station_name, data = df)
 
-df <- df %>% 
-  add_predictions(model1) %>% 
-  add_residuals(model1)
-summary(model1)
+df_pred <- df %>% 
+  gather_predictions(model1, model2, model3, model4, model5) %>% 
+  rename(predicted = pred)
 
+df_resid <- df %>%
+  gather_residuals(model1, model2, model3, model4, model5) %>% 
+  rename(residual = resid)
 
-df %>% 
-  ggplot(aes(mday, resid)) +
+glance(model1)
+glance(model2)
+glance(model3)
+glance(model4)
+glance(model5)
+
+tidy(model1)
+tidy(model2)
+tidy(model3)
+tidy(model4)
+tidy(model5)
+
+df_resid %>% 
+  ggplot(aes(date, residual, color = model)) +
   geom_hline(yintercept = 0) +
-  geom_point() +
-  #geom_smooth() +
-  facet_wrap(~month)
-
-
-df %>% 
-  ggplot(aes(n, pred)) +
   geom_point(alpha = .1) +
-  geom_smooth() +
-  facet_wrap(~year)
-summary(model1)
+  facet_wrap(~model, nrow = 1)
 
-df_model <- as_tibble(tidy(model1))
+df_resid %>%
+  ggplot(aes(number_of_rides, residual, color = model)) +
+  geom_point(alpha = .1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~model,
+             nrow = 1)
 
-terms %>% 
-  filter(term != "(Intercept)") %>% 
-  arrange(desc(estimate)) %>% 
-  select(term) %>% 
-  unique()
+df_pred %>% 
+  ggplot(aes(number_of_rides, predicted, color = model)) +
+  geom_point(alpha = .1) +
+  #geom_smooth() +
+  facet_wrap(~model)
 
+df_resid %>% 
+  ggplot(aes(residual, color = model)) +
+  geom_freqpoly(bins = 50)
 
-?dist
-
-
-
-mutate(term = as.factor(term)) %>% 
-  ggplot(aes(term, estimate)) +
-  geom_point() +
-  coord_flip()
+#get weather data using this package http://ram-n.github.io/weatherData/
+        

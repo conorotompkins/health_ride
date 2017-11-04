@@ -79,7 +79,9 @@ df_wide <- data_long %>%
 pgh_map +
   geom_point(data = df_wide, aes(from_longitude, from_latitude)) +
   geom_point(data = df_wide, aes(to_longitude, to_latitude)) +
-  geom_segment(data = df_wide, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
+  geom_segment(data = df_wide, aes(x = from_longitude, xend = to_longitude, 
+                                   y = from_latitude, yend = to_latitude, 
+                                   alpha = number_of_trips, size = number_of_trips)) +
   scale_alpha_continuous(range = c(.05, .3)) +
   scale_size_continuous(range = c(.05, 3)) +
   #facet_wrap(~from_station_name) +
@@ -97,22 +99,18 @@ top_from_stations <- df_wide %>%
 df_wide_specific_station <- df_wide %>% 
   filter(from_station_name %in% top_from_stations)
 
-devtools::install_github("tidyverse/ggplot2")
-
 pgh_map +
   geom_point(data = df_wide_specific_station, aes(from_longitude, from_latitude), show.legend = FALSE) +
   geom_point(data = df_wide_specific_station, aes(to_longitude, to_latitude), shape = 1, size = 5, show.legend = FALSE) +
   geom_segment(data = df_wide_specific_station, aes(x = from_longitude, xend = to_longitude, 
                                                     y = from_latitude, yend = to_latitude, 
                                                     alpha = number_of_trips, size = number_of_trips),
-               arrow = arrow(length = unit(0.03, "npc"), linejoin='mitre')) +
-  scale_alpha_continuous(range = c(.1, .5)) +
+               arrow = arrow(length = unit(0.03, "npc"))) +
+  scale_alpha_continuous(range = c(.3, .5)) +
   scale_size_continuous(range = c(.05, 3)) +
   facet_wrap(~from_station_name,
              ncol = 3) +
   theme_minimal()
-?geom_segment
-
 
 df_wide_day <- data_long %>% 
   spread(station_name_type, station_name) %>% 
@@ -134,7 +132,9 @@ df_wide_day <- data_long %>%
 pgh_map +
   geom_point(data = df_wide_day, aes(from_longitude, from_latitude)) +
   geom_point(data = df_wide_day, aes(to_longitude, to_latitude)) +
-  geom_segment(data = df_wide, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
+  geom_segment(data = df_wide, aes(x = from_longitude, xend = to_longitude, 
+                                   y = from_latitude, yend = to_latitude, 
+                                   alpha = number_of_trips, size = number_of_trips)) +
   scale_alpha_continuous(range = c(.05, .3)) +
   scale_size_continuous(range = c(.05, 3)) +
   facet_wrap(~is_weekday) +
@@ -147,7 +147,7 @@ df_station_data <- data_long %>%
   summarize(number_of_trips = n()) %>% 
   arrange(desc(number_of_trips))
 
-df_station_names <- data_stations %>% 
+df_station_names <- data_station_locations %>% 
   ungroup() %>% 
   #select(station_name) %>% 
   unique()
@@ -155,59 +155,3 @@ df_station_names <- data_stations %>%
 df_mismatch <- df_station_data %>% 
   left_join(df_station_names) %>% 
   filter(is.na(latitude))
-
-#i want to color by station_name_type, but still be able to select certain from_stations for faceting
-df_station_facet <- df_long %>% 
-  ungroup() %>% 
-  filter(from_station_name %in% top_from_stations) %>% 
-  mutate(from_station_name = factor(from_station_name, levels = top_from_stations))
-
-###### OLD CODE ######
-
-
-
-
-data_wide <- data_long %>% 
-  #select(station_name_type, station_name) %>% 
-  spread(station_name_type, station_name) %>% 
-  left_join(data_stations, by = c("from_station_name" = "station_name")) %>%
-  rename(from_latitude = latitude,
-         from_longitude = longitude) %>% 
-  left_join(data_stations, by = c("to_station_name" = "station_name")) %>% 
-  rename(to_latitude = latitude,
-         to_longitude = longitude) %>% 
-  select(from_station_name, to_station_name, to_longitude, to_latitude, from_longitude, from_latitude)
-write_csv(data_wide, "data/data_wide.csv")
-
-df_station_visits <- data_long %>% 
-  group_by(station_name) %>% 
-  summarize(number_of_visits_total = n())
-
-df_stations <- data_wide %>% 
-  group_by(from_station_name, to_station_name, from_longitude, from_latitude, to_longitude, to_latitude) %>% 
-  summarise(number_of_trips = n()) %>% 
-  arrange(desc(number_of_trips)) %>% 
-  mutate(station_type = ifelse(from_station_name == to_station_name,
-                                "Same station", "different station")) %>% 
-  left_join(df_station_visits, by = c("from_station_name" = "station_name"))
-
-
-pgh_map +
-  geom_point(data = df_stations, aes(from_longitude, from_latitude)) +
-  geom_point(data = df_stations, aes(to_longitude, to_latitude)) +
-  geom_segment(data = df_stations, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
-  scale_alpha_continuous(range = c(.01, 1)) +
-  scale_size_continuous(range = c(.1, 5)) +
-  theme_minimal()
-ggsave("images/ride_map.png")
-
-pgh_map +
-  geom_point(data = df_station_facet, aes(from_longitude, from_latitude, size = number_of_trips, color = station_type)) +
-  geom_point(data = df_station_facet, aes(to_longitude, to_latitude, size = number_of_trips, color = station_type)) +
-  geom_segment(data = df_station_facet, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips)) +
-  scale_alpha_continuous(range = c(.5, 1)) +
-  facet_wrap(~from_station_name) +
-  theme_minimal()
-ggsave("images/ride_map_top_6_faceted.png")
-
-#need to move to long data format to get color of points correct. 

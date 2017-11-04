@@ -34,7 +34,7 @@ df_long <- data_long %>%
   group_by(station_name, station_name_type) %>% 
   summarize(number_of_trips = n()) %>% 
   arrange(desc(number_of_trips)) %>% 
-  left_join(data_stations)
+  left_join(data_station_locations)
 
 df_from_to <- df_long %>% 
   spread(station_name_type, number_of_trips) %>% 
@@ -59,13 +59,14 @@ pgh_map +
   theme_minimal()
 
 
-df_wide <- data_long %>% 
+df_wide <- data_long %>%
   spread(station_name_type, station_name) %>% 
   select(from_station_name, to_station_name) %>% 
-  left_join(data_stations, by = c("from_station_name" = "station_name")) %>%
+  filter(from_station_name != to_station_name) %>% 
+  left_join(data_station_locations, by = c("from_station_name" = "station_name")) %>%
   rename(from_latitude = latitude,
          from_longitude = longitude) %>% 
-  left_join(data_stations, by = c("to_station_name" = "station_name")) %>% 
+  left_join(data_station_locations, by = c("to_station_name" = "station_name")) %>% 
   rename(to_latitude = latitude,
          to_longitude = longitude) %>% 
   group_by(from_station_name, to_station_name, from_longitude, from_latitude, to_longitude, to_latitude) %>% 
@@ -79,8 +80,8 @@ pgh_map +
   geom_point(data = df_wide, aes(from_longitude, from_latitude)) +
   geom_point(data = df_wide, aes(to_longitude, to_latitude)) +
   geom_segment(data = df_wide, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
-  scale_alpha_continuous(range = c(.05, 1)) +
-  scale_size_continuous(range = c(.05, 5)) +
+  scale_alpha_continuous(range = c(.05, .3)) +
+  scale_size_continuous(range = c(.05, 3)) +
   #facet_wrap(~from_station_name) +
   theme_minimal()
 ggsave("images/ride_map.png")
@@ -93,13 +94,34 @@ top_from_stations <- df_wide %>%
   select(from_station_name) %>% 
   unlist()
 
+df_wide_specific_station <- df_wide %>% 
+  filter(from_station_name %in% top_from_stations)
+
+devtools::install_github("tidyverse/ggplot2")
+
+pgh_map +
+  geom_point(data = df_wide_specific_station, aes(from_longitude, from_latitude), show.legend = FALSE) +
+  geom_point(data = df_wide_specific_station, aes(to_longitude, to_latitude), shape = 1, size = 5, show.legend = FALSE) +
+  geom_segment(data = df_wide_specific_station, aes(x = from_longitude, xend = to_longitude, 
+                                                    y = from_latitude, yend = to_latitude, 
+                                                    alpha = number_of_trips, size = number_of_trips),
+               arrow = arrow(length = unit(0.03, "npc"), linejoin='mitre')) +
+  scale_alpha_continuous(range = c(.1, .5)) +
+  scale_size_continuous(range = c(.05, 3)) +
+  facet_wrap(~from_station_name,
+             ncol = 3) +
+  theme_minimal()
+?geom_segment
+
+
 df_wide_day <- data_long %>% 
   spread(station_name_type, station_name) %>% 
   select(from_station_name, to_station_name, is_weekday) %>% 
-  left_join(data_stations, by = c("from_station_name" = "station_name")) %>%
+  filter(from_station_name != to_station_name) %>% 
+  left_join(data_station_locations, by = c("from_station_name" = "station_name")) %>%
   rename(from_latitude = latitude,
          from_longitude = longitude) %>% 
-  left_join(data_stations, by = c("to_station_name" = "station_name")) %>% 
+  left_join(data_station_locations, by = c("to_station_name" = "station_name")) %>% 
   rename(to_latitude = latitude,
          to_longitude = longitude) %>% 
   group_by(is_weekday, from_station_name, to_station_name, from_longitude, from_latitude, to_longitude, to_latitude) %>% 
@@ -113,8 +135,8 @@ pgh_map +
   geom_point(data = df_wide_day, aes(from_longitude, from_latitude)) +
   geom_point(data = df_wide_day, aes(to_longitude, to_latitude)) +
   geom_segment(data = df_wide, aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude, alpha = number_of_trips, size = number_of_trips)) +
-  scale_alpha_continuous(range = c(.05, 1)) +
-  scale_size_continuous(range = c(.05, 5)) +
+  scale_alpha_continuous(range = c(.05, .3)) +
+  scale_size_continuous(range = c(.05, 3)) +
   facet_wrap(~is_weekday) +
   theme_minimal()
 

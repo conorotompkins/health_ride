@@ -1,3 +1,5 @@
+library(tidyverse)
+
 data_path <- "./data/stations/"
 data_list <- list.files(path = data_path, pattern = ".csv")
 data_list <- paste0(data_path, "/", data_list)
@@ -16,3 +18,5 @@ data_station_locations$station_name[data_station_locations$station_name == "Atwo
 data_station_locations$station_name[data_station_locations$station_name == "Alder St & S Higland Ave"] <- "Alder St & S Highland Ave"
 data_station_locations$station_name[data_station_locations$station_name == "42nd St & Penn Ave"] <- "42nd & Penn Ave."
 data_station_locations$station_name[data_station_locations$station_name == "Liberty Ave & S Millvale (West Penn Hospital)"] <- "Liberty Ave & S Millvale Ave (West Penn Hospital)"
+
+write_csv(data_station_locations, "data/station_locations.csv")

@@ -2,7 +2,7 @@ library(tidyverse)
 library(ggmap)
 library(gghighlight)
 
-theme_set(theme_bw())
+theme_set(theme_minimal())
 
 rm(list = ls())
 
@@ -27,7 +27,9 @@ pgh_map +
   geom_point(data = df_station_totals, aes(longitude, latitude, size = number_of_trips),
              alpha = .75) +
   scale_size_continuous(range = c(.1, 5)) +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank())
 
 df_long <- data_long %>% 
   select(station_name, station_name_type) %>% 
@@ -49,15 +51,17 @@ df_from_to %>%
   scale_x_continuous(limits = c(0, 45000)) +
   scale_y_continuous(limits = c(0, 45000)) +
   coord_equal() +
-  geom_abline()
+  geom_abline() +
+  theme_bw()
   
 pgh_map +
   geom_point(data = df_long, aes(longitude, latitude, size = number_of_trips, color = station_name_type),
              alpha = .75) +
   scale_size_continuous(range = c(.1, 5)) +
   facet_wrap(~station_name_type) +
-  theme_minimal()
-
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank())
 
 df_wide <- data_long %>%
   spread(station_name_type, station_name) %>% 
@@ -85,7 +89,9 @@ pgh_map +
   scale_alpha_continuous(range = c(.05, .3)) +
   scale_size_continuous(range = c(.05, 3)) +
   #facet_wrap(~from_station_name) +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank())
 ggsave("images/ride_map.png")
 
 top_from_stations <- df_wide %>% 
@@ -110,7 +116,9 @@ pgh_map +
   scale_size_continuous(range = c(.05, 3)) +
   facet_wrap(~from_station_name,
              ncol = 3) +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank())
 
 df_wide_day <- data_long %>% 
   spread(station_name_type, station_name) %>% 
@@ -124,10 +132,7 @@ df_wide_day <- data_long %>%
          to_longitude = longitude) %>% 
   group_by(is_weekday, from_station_name, to_station_name, from_longitude, from_latitude, to_longitude, to_latitude) %>% 
   summarise(number_of_trips = n()) %>% 
-  arrange(desc(number_of_trips)) %>% 
-  mutate(from_station_type = ifelse(from_station_name == to_station_name,
-                                    "Same station", "Different station"))
-
+  arrange(desc(number_of_trips))
 
 pgh_map +
   geom_point(data = df_wide_day, aes(from_longitude, from_latitude)) +
@@ -138,7 +143,44 @@ pgh_map +
   scale_alpha_continuous(range = c(.05, .3)) +
   scale_size_continuous(range = c(.05, 3)) +
   facet_wrap(~is_weekday) +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank())
+
+df_wide_tod <- data_long %>% 
+  spread(station_name_type, station_name) %>% 
+  select(from_station_name, to_station_name, hour) %>% 
+  filter(from_station_name != to_station_name) %>%
+  mutate(time_of_day = cut(hour, breaks = c(-Inf, 3, 6, 9, 12, 15, 18, 21, Inf), 
+                           labels = c("0-3", "3-6", "6-9", "9-12", "12-15", "15-18", "18-21", "21-24"), 
+                           ordered_result = TRUE)) %>% 
+  left_join(data_station_locations, by = c("from_station_name" = "station_name")) %>%
+  rename(from_latitude = latitude,
+         from_longitude = longitude) %>% 
+  left_join(data_station_locations, by = c("to_station_name" = "station_name")) %>% 
+  rename(to_latitude = latitude,
+         to_longitude = longitude) %>% 
+  group_by(time_of_day, from_station_name, to_station_name, 
+           from_longitude, from_latitude, 
+           to_longitude, to_latitude) %>% 
+  summarise(number_of_trips = n()) %>% 
+  arrange(desc(number_of_trips))
+
+pgh_map +
+  geom_point(data = df_wide_tod, aes(from_longitude, from_latitude)) +
+  geom_point(data = df_wide_tod, aes(to_longitude, to_latitude)) +
+  geom_segment(data = df_wide_tod, aes(x = from_longitude, xend = to_longitude, 
+                                   y = from_latitude, yend = to_latitude, 
+                                   alpha = number_of_trips, size = number_of_trips)) +
+  scale_alpha_continuous(range = c(.05, .3)) +
+  scale_size_continuous(range = c(.05, 3)) +
+  facet_wrap(~time_of_day) +
+  theme_minimal() +
+  theme(axis.text = element_blank(),
+        axis.title = element_blank())
+  
+  
+
 
 #identify mismatch station names
 df_station_data <- data_long %>% 

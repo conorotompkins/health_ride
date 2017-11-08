@@ -204,25 +204,40 @@ tidy(model2)
 #tidy(model4)
 #tidy(model5)
 
+df_daily_station_pred %>% 
+  ggplot(aes(date, number_of_rides)) +
+  geom_point()
+
+df_daily_station_pred %>% 
+  ggplot(aes(date, predicted, color = model)) +
+  geom_point(alpha = 1) +
+  facet_wrap(~model, nrow = 1)
+
 df_daily_station_resid %>% 
   ggplot(aes(date, residual, color = model)) +
   geom_hline(yintercept = 0) +
-  geom_point(alpha = .1) +
+  geom_point(alpha = .5) +
   facet_wrap(~model, nrow = 1)
 
-df_daily_station_resid %>%
-  ggplot(aes(number_of_rides, residual, color = model)) +
-  geom_point(alpha = .1) +
-  facet_wrap(~model,
-             nrow = 1)
-
-df_daily_station_pred %>% 
+df_daily_station_pred  %>% 
   ggplot(aes(number_of_rides, predicted, color = model)) +
-  geom_point(alpha = .1) +
+  geom_point(alpha = .5) +
   #geom_smooth() +
   facet_wrap(~model)
 
-df_daily_station_resid %>% 
+df_daily_station_pred %>% 
+  ggplot(aes(number_of_rides, predicted, color = model)) +
+  geom_point(alpha = .5) +
+  facet_wrap(~model,
+             nrow = 1)
+  
+df_daily_station_resid %>%
+  ggplot(aes(number_of_rides, residual, color = model)) +
+  geom_point(alpha = .5) +
+  facet_wrap(~model,
+             nrow = 1)
+
+df_daily_resid %>% 
   ggplot(aes(residual, color = model)) +
   geom_freqpoly(bins = 50)
 

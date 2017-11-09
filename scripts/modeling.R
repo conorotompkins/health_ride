@@ -8,11 +8,11 @@ source("scripts/load_data_long.R")
 source("scripts/load_data_wide.R")
 rm(list = c("data", "data_long"))
 
-###Daily models
 df_holidays <- read_csv("data/holidays.csv") %>% 
   mutate(date = mdy(date))
 df_holidays
 
+###Daily models
 df_daily <- data_wide %>% 
   mutate(month = factor(month,  ordered = FALSE),
          wday = factor(wday, ordered = FALSE)) %>% 
@@ -28,57 +28,60 @@ model1 <- lm(number_of_rides ~ month + wday, data = df_daily)
 model2 <- lm(number_of_rides ~ month * wday, data = df_daily)
 model3 <- lm(number_of_rides ~ year + month * wday, data = df_daily)
 model4 <- lm(number_of_rides ~ year * month * wday + holiday, data = df_daily)
-model5 <- lm(number_of_rides ~ year * month * wday * holiday, data = df_daily)
+#model5 <- lm(number_of_rides ~ year * month * wday * holiday, data = df_daily)
 
 glance(model1)
 glance(model2)
 glance(model3)
 glance(model4)
-glance(model5)
+#glance(model5)
 
 tidy(model1)
 tidy(model2)
 tidy(model3)
 tidy(model4)
-tidy(model5)
+#tidy(model5)
 
 df_daily %>%
   add_predictions(model1)
 
 df_daily_pred <- df_daily %>% 
-  gather_predictions(model1, model2, model3, model4, model5) %>% 
+  gather_predictions(model1, model2, model3, model4) %>% 
   rename(predicted = pred)
 
 df_daily_resid <- df_daily %>%
-  gather_residuals(model1, model2, model3, model4, model5) %>% 
+  gather_residuals(model1, model2, model3, model4) %>% 
   rename(residual = resid)
 
+df_daily <- df_daily %>% 
+  left_join(df_daily_pred) %>% 
+  left_join(df_daily_resid)
 
 #plotting daily models
-df_daily_pred %>% 
+df_daily %>% 
   ggplot(aes(date, predicted, color = model)) +
   geom_point(alpha = 1) +
   facet_wrap(~model, nrow = 1)
 
-df_daily_resid %>% 
+df_daily %>% 
   ggplot(aes(date, residual, color = model)) +
   geom_hline(yintercept = 0) +
   geom_point(alpha = .5) +
   facet_wrap(~model, nrow = 1)
 
-df_daily_pred %>% 
+df_daily %>% 
   ggplot(aes(number_of_rides, predicted, color = model)) +
   geom_point(alpha = .5) +
-  #geom_smooth() +
+  geom_smooth() +
   facet_wrap(~model)
 
-df_daily_resid %>%
+df_daily %>%
   ggplot(aes(number_of_rides, residual, color = model)) +
-  geom_point(alpha = .1) +
+  geom_point(alpha = .5) +
   facet_wrap(~model,
              nrow = 1)
 
-df_daily_resid %>% 
+df_daily %>% 
   ggplot(aes(residual, color = model)) +
   geom_freqpoly(bins = 50)
 
@@ -100,9 +103,8 @@ df_daily <- data_wide %>%
   replace_na(replace = list(holiday = "none")) %>% 
   ungroup()
 
-model1 <- lm(number_of_rides ~ . - date - yday - temp_mean - temp_hi - temp_lo - precip, data = df_daily)
-model2 <- lm(number_of_rides ~ - date - yday + year * month * wday + holiday + temp_mean + temp_hi + temp_lo + precip, data = df_daily)
-
+model1 <- lm(number_of_rides ~ month + wday, data = df_daily)
+model2 <- lm(number_of_rides ~ year * month * wday + holiday + temp_mean + temp_hi + temp_lo + precip, data = df_daily)
 
 glance(model1)
 glance(model2)
@@ -116,46 +118,47 @@ tidy(model2)
 #tidy(model4)
 #tidy(model5)
 
-df_daily %>%
-  add_predictions(model1)
-
-df_daily_pred <- df_daily %>% 
+df_daily_weather_pred <- df_daily %>% 
   gather_predictions(model1, model2) %>% 
   rename(predicted = pred)
 
-df_daily_resid <- df_daily %>%
+df_daily_weather_resid <- df_daily %>%
   gather_residuals(model1, model2) %>% 
   rename(residual = resid)
 
+df_daily_weather <- df_daily %>%
+  left_join(df_daily_weather_pred %>% select(date, predicted)) %>% 
+  left_join(df_daily_weather_resid %>% select(date, residual))
+
 #plotting daily models
-df_daily_pred %>% 
+df_daily %>% 
   ggplot(aes(date, number_of_rides)) +
   geom_point()
 
-df_daily_pred %>% 
+df_daily %>% 
   ggplot(aes(date, predicted, color = model)) +
   geom_point(alpha = 1) +
   facet_wrap(~model, nrow = 1)
 
-df_daily_resid %>% 
+df_daily %>% 
   ggplot(aes(date, residual, color = model)) +
   geom_hline(yintercept = 0) +
   geom_point(alpha = .5) +
   facet_wrap(~model, nrow = 1)
 
-df_daily_pred %>% 
+df_daily %>% 
   ggplot(aes(number_of_rides, predicted, color = model)) +
   geom_point(alpha = .5) +
   #geom_smooth() +
   facet_wrap(~model)
 
-df_daily_resid %>%
+df_daily %>%
   ggplot(aes(number_of_rides, residual, color = model)) +
   geom_point(alpha = .5) +
   facet_wrap(~model,
              nrow = 1)
 
-df_daily_resid %>% 
+df_daily %>% 
   ggplot(aes(residual, color = model)) +
   geom_freqpoly(bins = 50)
 
@@ -178,7 +181,7 @@ df_daily_station
 #unique(df_daily_station$holiday)
 
 #sum(is.na(df$usertype))
-model1 <- lm(number_of_rides ~ from_station_name + from_station_name, data = df_daily_station)
+model1 <- lm(number_of_rides ~ from_station_name + to_station_name, data = df_daily_station)
 model2 <- lm(number_of_rides ~ from_station_name + destination_type, data = df_daily_station)
 #model3 <- lm(number_of_rides ~ wday + from_station_name + to_station_name, data = df_daily_station)
 #model4 <- lm(number_of_rides ~ wday + from_station_name * to_station_name, data = df_daily_station)
@@ -191,6 +194,8 @@ df_daily_station_pred <- df_daily_station %>%
 df_daily_station_resid <- df_daily_station %>%
   gather_residuals(model1, model2) %>% 
   rename(residual = resid)
+
+df_daily_station <-
 
 glance(model1)
 glance(model2)
@@ -237,7 +242,7 @@ df_daily_station_resid %>%
   facet_wrap(~model,
              nrow = 1)
 
-df_daily_resid %>% 
+df_daily_station_resid %>% 
   ggplot(aes(residual, color = model)) +
   geom_freqpoly(bins = 50)
 

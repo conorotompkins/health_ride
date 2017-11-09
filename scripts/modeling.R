@@ -60,6 +60,7 @@ df_daily <- df_daily %>%
 #plotting daily models
 df_daily %>% 
   ggplot(aes(date, predicted, color = model)) +
+  geom_point(aes(y = number_of_rides), color = "black", alpha = .5) +
   geom_point(alpha = 1) +
   facet_wrap(~model, nrow = 1)
 
@@ -86,7 +87,7 @@ df_daily %>%
   geom_freqpoly(bins = 50)
 
 rm(list = c("df_daily", "df_daily_pred", "df_daily_resid"))
-rm(list = c("model1", "model2", "model3", "model4", "model5"))
+rm(list = c("model1", "model2", "model3", "model4"))
 
 ###weather model
 source("scripts/load_weather_data.R")
@@ -103,7 +104,7 @@ df_daily <- data_wide %>%
   replace_na(replace = list(holiday = "none")) %>% 
   ungroup()
 
-model1 <- lm(number_of_rides ~ month + wday, data = df_daily)
+model1 <- lm(number_of_rides ~ year * month * wday + holiday, data = df_daily)
 model2 <- lm(number_of_rides ~ year * month * wday + holiday + temp_mean + temp_hi + temp_lo + precip, data = df_daily)
 
 glance(model1)
@@ -132,11 +133,8 @@ df_daily_weather <- df_daily %>%
 
 #plotting daily models
 df_daily_weather %>% 
-  ggplot(aes(date, number_of_rides)) +
-  geom_point()
-
-df_daily_weather %>% 
   ggplot(aes(date, predicted, color = model)) +
+  geom_point(aes(y = number_of_rides), color = "black", alpha = .5) +
   geom_point(alpha = 1) +
   facet_wrap(~model, nrow = 1)
 
@@ -162,9 +160,9 @@ df_daily_weather %>%
   ggplot(aes(residual, color = model)) +
   geom_freqpoly(bins = 50)
 
-rm(list = c("df_daily", "df_daily_pred", "df_daily_resid", "df_weather"))
+rm(list = c("df_daily", "df_daily_weather_pred", "df_daily_weather_resid", "df_daily_weather"))
 rm(list = c("model1", "model2"))
-rm(list = c("data_weather_dfs"))
+rm(list = c("data_weather_dfs", "df_daily_weather"))
 
 ###Daily Station Models
 df_daily_station <- data_wide %>% 
@@ -211,12 +209,9 @@ tidy(model2)
 #tidy(model4)
 #tidy(model5)
 
-df_daily_station%>% 
-  ggplot(aes(date, number_of_rides)) +
-  geom_point()
-
 df_daily_station %>% 
   ggplot(aes(date, predicted, color = model)) +
+  geom_point(aes(y = number_of_rides), color = "black", alpha = .5) +
   geom_point(alpha = 1) +
   facet_wrap(~model, nrow = 1)
 
@@ -250,3 +245,4 @@ df_daily_station %>%
 
 
 rm(list = c("model1", "model2"))
+rm(list = c("df_daily_station", "df_daily_station_pred", "df_daily_station_resid"))

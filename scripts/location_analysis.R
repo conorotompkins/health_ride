@@ -11,12 +11,14 @@ source("scripts/load_stations_data.R")
 
 rm(list = c("data", "data_list"))
 
+data_long
+
 df_station_totals <- data_long %>% 
-  group_by(station_name) %>% 
+  group_by(year, quarter, station_name) %>% 
   summarize(number_of_trips = n()) %>% 
   arrange(desc(number_of_trips), station_name) %>% 
   left_join(data_station_locations) %>% 
-  select(station_name, number_of_trips, longitude, latitude)
+  select(year, quarter, station_name, number_of_trips, longitude, latitude)
 
 df_station_totals
 

@@ -64,10 +64,9 @@ ggplot(clusterings, aes(k, tot.withinss)) +
   geom_line() +
   scale_x_continuous(breaks = 1:10)
 
-p1 <- clusters %>% 
+clusters %>% 
   filter(k >= 2) %>% 
   ggplot(aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude)) + 
   geom_segment(aes(color = cluster, size = size),
                arrow = arrow(length = unit(0.03, "npc"))) + 
   facet_wrap(~ k)
-p1

@@ -69,4 +69,5 @@ clusters %>%
   ggplot(aes(x = from_longitude, xend = to_longitude, y = from_latitude, yend = to_latitude)) + 
   geom_segment(aes(color = cluster, size = size),
                arrow = arrow(length = unit(0.03, "npc"))) + 
-  facet_wrap(~ k)
+  facet_wrap(~ paste(k, "clusters"))
+             

@@ -1,16 +1,70 @@
 library(tidyverse)
 library(modelr)
 library(broom)
+library(lubridate)
+
+theme_set(theme_bw())
 
 options(scipen = 99)
 
-source("scripts/load_data_long.R")
-source("scripts/load_data_wide.R")
-rm(list = c("data", "data_long"))
+#source("scripts/load_data_long.R")
+#source("scripts/load_data_wide.R")
+#rm(list = c("data", "data_long"))
 
-df_holidays <- read_csv("data/holidays.csv") %>% 
+#df_holidays <- read_csv("data/holidays.csv") %>% 
+#  mutate(date = mdy(date))
+#df_holidays
+
+data_long <- read_csv("https://raw.githubusercontent.com/conorotompkins/healthy_ride/master/data/data.csv")
+
+colnames(data_long) <- tolower(colnames(data_long))
+colnames(data_long) <- gsub(" ", "_", colnames(data_long))
+
+data_long <- data_long %>% 
+  rename(start_date_time = starttime,
+         stop_date_time = stoptime) %>% 
+  gather(date_time_type, date_time, c(start_date_time, stop_date_time)) %>% 
+  select(date_time_type, date_time, everything()) %>% 
+  mutate(date_time_2 = date_time) %>% 
+  separate(date_time, " ", into = c("date", "time")) %>% 
+  mutate(id = row_number(),
+         date = mdy(date),
+         year = year(date),
+         month = month(date, label = TRUE),
+         week = week(date),
+         time = hm(time),
+         hour = hour(time),
+         wday = wday(date, label = TRUE),
+         is_weekday = ifelse(wday %in% c("Mon", "Tues", "Wed", "Thurs", "Fri"), "weekday", "weekend"),
+         yday = yday(date),
+         mday = mday(date)) %>% 
+  mutate(trip_duration = (tripduration / 60) / 60) %>% 
+  gather(station_id_type, station_id, c(from_station_id, to_station_id)) %>% 
+  gather(station_name_type, station_name, c(from_station_name, to_station_name)) %>% 
+  select(date_time_type, 
+         is_weekday, 
+         date, 
+         year,
+         month,
+         time, 
+         hour,
+         wday,
+         yday,
+         mday,
+         date_time_2, 
+         station_id_type, 
+         station_id, 
+         station_name_type,
+         station_name,
+         everything())
+
+
+data_wide <- data_long %>%
+  spread(station_name_type, station_name)
+
+df_holidays <- read_csv("https://raw.githubusercontent.com/conorotompkins/healthy_ride/master/data/holidays.csv") %>% 
   mutate(date = mdy(date))
-df_holidays
+
 
 ###Daily models
 df_daily <- data_wide %>% 
@@ -90,7 +144,7 @@ rm(list = c("df_daily", "df_daily_pred", "df_daily_resid"))
 rm(list = c("model1", "model2", "model3", "model4"))
 
 ###weather model
-source("scripts/load_weather_data.R")
+#source("scripts/load_weather_data.R")
 
 df_daily <- data_wide %>% 
   mutate(month = factor(month,  ordered = FALSE),

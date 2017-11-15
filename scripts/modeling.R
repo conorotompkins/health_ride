@@ -162,7 +162,7 @@ df_daily_weather %>%
 
 rm(list = c("df_daily", "df_daily_weather_pred", "df_daily_weather_resid", "df_daily_weather"))
 rm(list = c("model1", "model2"))
-rm(list = c("data_weather_dfs", "df_daily_weather"))
+rm(list = c("data_weather_dfs", "df_weather"))
 
 ###Daily Station Models
 df_daily_station <- data_wide %>% 
@@ -171,16 +171,19 @@ df_daily_station <- data_wide %>%
   #filter(station_name_type == "from_station_name") %>% 
   #filter(!is.na(usertype)) %>% 
   mutate(destination_type = if_else(from_station_name == to_station_name, "same_station", "different_station")) %>% 
-  group_by(date, wday, from_station_name, to_station_name, destination_type) %>% 
-  summarize(number_of_rides = n())
+  group_by(date, year, month, wday, from_station_name, to_station_name, destination_type) %>% 
+  summarize(number_of_rides = n()) %>% 
+  left_join(df_holidays) %>% 
+  replace_na(replace = list(holiday = "none"))
 df_daily_station
 #class(df_daily_station$month)
 #class(df_daily_station$wday)
 #unique(df_daily_station$holiday)
 
 #sum(is.na(df$usertype))
-model1 <- lm(number_of_rides ~ from_station_name + to_station_name, data = df_daily_station)
-model2 <- lm(number_of_rides ~ from_station_name + destination_type, data = df_daily_station)
+model1 <- lm(number_of_rides ~ year * month * wday + holiday, data = df_daily_station)
+model2 <- lm(number_of_rides ~ from_station_name + to_station_name, data = df_daily_station)
+model3 <- lm(number_of_rides ~ from_station_name + destination_type, data = df_daily_station)
 #model3 <- lm(number_of_rides ~ wday + from_station_name + to_station_name, data = df_daily_station)
 #model4 <- lm(number_of_rides ~ wday + from_station_name * to_station_name, data = df_daily_station)
 #model5 <- lm(number_of_rides ~ year + month * wday + holiday + from_station_name, data = df_daily_station)
@@ -212,7 +215,7 @@ tidy(model2)
 df_daily_station %>% 
   ggplot(aes(date, predicted, color = model)) +
   geom_point(aes(y = number_of_rides), color = "black", alpha = .5) +
-  geom_point(alpha = 1) +
+  geom_point(alpha = .1) +
   facet_wrap(~model, nrow = 1)
 
 df_daily_station %>% 

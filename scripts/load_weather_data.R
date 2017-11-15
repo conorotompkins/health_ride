@@ -34,4 +34,4 @@ df_weather <- df_weather %>%
             temp_lo = min(temp, na.rm = TRUE),
             precip = sum(precip, na.rm = TRUE))
 summary(df_weather)
-
+#write_csv(df_weather, "data/df_weather.csv")

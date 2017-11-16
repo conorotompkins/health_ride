@@ -61,9 +61,13 @@ data_long <- data_long %>%
 
 data_wide <- data_long %>%
   spread(station_name_type, station_name)
+data_wide
+
 
 df_holidays <- read_csv("https://raw.githubusercontent.com/conorotompkins/healthy_ride/master/data/holidays.csv") %>% 
   mutate(date = mdy(date))
+
+df_weather <- read_csv("https://raw.githubusercontent.com/conorotompkins/healthy_ride/master/data/df_weather.csv")
 
 
 ###Daily models

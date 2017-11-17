@@ -285,11 +285,7 @@ df_daily_station <- data_wide %>%
   summarize(number_of_rides = n())
 df_daily_station
 ```
-#class(df_daily_station$month)
-#class(df_daily_station$wday)
-#unique(df_daily_station$holiday)
 
-#sum(is.na(df$usertype))
 ```{r, eval=FALSE, include=FALSE}
 model1 <- lm(number_of_rides ~ from_station_name + to_station_name, data = df_daily_station)
 model2 <- lm(number_of_rides ~ from_station_name + destination_type, data = df_daily_station)

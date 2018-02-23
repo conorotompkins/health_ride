@@ -27,7 +27,7 @@ data_long <- data %>%
          quarter = quarter(date),
          month = month(date, label = TRUE),
          week = week(date),
-         time = hm(time),
+         time = hm(time), 
          hour = hour(time),
          wday = wday(date, label = TRUE),
          is_weekday = ifelse(wday %in% c("Mon", "Tues", "Wed", "Thurs", "Fri"), "weekday", "weekend"),
@@ -43,7 +43,7 @@ data_long <- data %>%
          year,
          quarter,
          month,
-         time, 
+         #time, commented out, might be causing error 
          hour,
          wday,
          yday,

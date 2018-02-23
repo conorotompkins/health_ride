@@ -3,12 +3,13 @@ library(lubridate)
 library(viridis)
 library(scales)
 
-theme_set(theme_bw())
+theme_set(theme_bw(base_size = 18))
 
-rm(list = ls())
+#rm(list = ls())
 
 source("scripts/load_data_long.R")
 data_long
+
 rm(data)
 
 table(data_long$is_weekday, data_long$wday)
@@ -187,30 +188,30 @@ data_long %>%
   #geom_histogram(bins = 100) +
   geom_freqpoly(binwidth = 1)
 
-locations_sd <- data_long %>% 
-  group_by(location_name) %>% 
-  summarize(location_sd = sd(trip_duration)) %>% 
-  arrange(desc(location_sd)) %>% 
-  select(location_name) %>% 
+stations_sd <- data_long %>% 
+  group_by(station_name) %>% 
+  summarize(station_sd = sd(trip_duration)) %>% 
+  arrange(desc(station_sd)) %>% 
+  select(station_name) %>% 
   unlist()
 
 data_long %>% 
   filter(trip_duration >= 1) %>% 
-  mutate(location_name = factor(location_name, levels = locations_sd)) %>% 
+  mutate(station_name = factor(station_name, levels = stations_sd)) %>% 
   ggplot(aes(trip_duration)) +
   #geom_density() +
   #geom_histogram(bins = 100) +
   geom_freqpoly(binwidth = 1) +
   geom_vline(xintercept = 24, color = "red", linetype = 2) +
   #coord_cartesian(ylim = c(0, 10^4)) +
-  facet_wrap(~location_name)
+  facet_wrap(~station_name)
 
 summary(data_long$trip_duration)
 
 data_long %>% 
   mutate(trip_duration = round(trip_duration, digits = 0)) %>% 
-  count(month, location_name, trip_duration) %>% 
-  ggplot(aes(location_name, trip_duration, fill = log10(n))) +
+  count(month, station_name, trip_duration) %>% 
+  ggplot(aes(station_name, trip_duration, fill = log10(n))) +
   geom_tile() + 
   facet_wrap(~month,
              nrow = 1) +

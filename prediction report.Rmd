@@ -1,0 +1,58 @@
+---
+title: "predicting Healthy Ride ridership with {prophet}"
+author: "Conor Tompkins"
+date: "6/21/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(prophet)
+library(janitor)
+library(hrbrthemes)
+
+options(scipen = 999)
+
+theme_set(theme_bw())
+```
+
+```{r}
+df <- df %>% 
+  count(date) %>% 
+  rename(ds = date,
+         y = n)
+  
+glimpse(df)
+```
+
+```{r}
+m <- prophet(df)
+
+set_periods <- 365
+
+future <- make_future_dataframe(m, periods = set_periods, freq = "day")
+```
+
+```{r}
+forecast <- predict(m, future) %>% 
+  as_tibble()
+```
+
+```{r}
+forecast
+```
+
+```{r}
+plot(m, forecast)
+```
+
+```{r}
+prophet_plot_components(m, forecast)
+```

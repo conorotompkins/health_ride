@@ -5,12 +5,15 @@ date: "6/21/2019"
 output: html_document
 ---
 
+This post is about predicting demand for the Healthy Ride bike system in Pittsburgh. I wanted to try out Facebook's `prophet` package and try to do some time series forecasting.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       message = FALSE,
                       warning = FALSE)
 ```
 
+As usual, load the required packages and set up the environment:
 ```{r}
 library(tidyverse)
 library(lubridate)
@@ -23,36 +26,52 @@ options(scipen = 999)
 theme_set(theme_bw())
 ```
 
+This code loads the data and formats the date column so the `prophet` package can interface with it. I use `dir()` to find all the CSV files in  the folder and then `set_names()` and `map_df(read_csv())` to read each of the CSV files into memory.
+```{r}
+source("scripts/load_data.R")
+```
+
+The data I will use contains the number of rides per day and also includes the month and year. `prophet` will identify the time series patterns ("seasonality") in the data and identify the "true" pattern
+
+`prophet` has a plug-and-play workflow that is easy to use, but it has more stringent requirements for how the data has to be shaped. The date data has to be named `ds` and the target variable has to be named `y`. 
 ```{r}
 df <- df %>% 
   count(date) %>% 
   rename(ds = date,
          y = n)
-  
-glimpse(df)
 ```
 
 ```{r}
-m <- prophet(df)
-
-set_periods <- 365
-
-future <- make_future_dataframe(m, periods = set_periods, freq = "day")
+glimpse(df)
 ```
 
+This code fits a model to the dataset.
+```{r}
+m <- prophet(df)
+```
+
+`make_future_dataframe()` creates the dataframe that `prophet` uses to make its forecast. In this case, I have it create a dataframe with 365 days of additional rows to predict onto.
+```{r}
+future <- make_future_dataframe(m, periods = 365, freq = "day")
+```
+
+This code performs the forecast on the future dataset.
 ```{r}
 forecast <- predict(m, future) %>% 
   as_tibble()
 ```
 
+The output is a dataframe with the date, the predicted ridership, and the upper and lower bounds of the prediction.
 ```{r}
 forecast
 ```
 
+`plot` automatically plots the `forecast` data:
 ```{r}
 plot(m, forecast)
 ```
 
+`prophet` also decomposes the various time series seasonalities:
 ```{r}
 prophet_plot_components(m, forecast)
 ```

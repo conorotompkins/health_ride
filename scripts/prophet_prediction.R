@@ -18,7 +18,12 @@ df <- df %>%
   
 glimpse(df)
 
-m <- prophet(df, growth = 'logistic')
+us_holidays <- prophet::generated_holidays %>% 
+  as_tibble() %>% 
+  filter(country == "US")
+
+
+m <- prophet(df, growth = 'logistic', holidays = us_holidays)
 
 set_periods <- 365
 

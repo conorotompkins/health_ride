@@ -89,9 +89,9 @@ df_cv %>%
 df_cv %>% 
   ggplot(aes(x = ds)) +
   geom_line(aes(y = yhat), color = "blue")
-  #geom_ribbon(aes(ymin = yhat_lower, ymax = yhat_upper), fill = "blue", alpha = .3) +
-  #geom_point(aes(y = y)) +
-  #geom_vline(xintercept = as.numeric(as_datetime(unique(df_cv$cutoff))), size = .5)
+  geom_ribbon(aes(ymin = yhat_lower, ymax = yhat_upper), fill = "blue", alpha = .3) +
+  geom_point(aes(y = y)) +
+  geom_vline(xintercept = as.numeric(as_datetime(unique(df_cv$cutoff))), size = .5)
 
 plot_cross_validation_metric(df_cv, metric = "mape")
 

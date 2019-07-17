@@ -41,7 +41,7 @@ df <- df %>%
   rename(ds = date,
          y = n) %>% 
   mutate(floor = 0,
-         cap = 10^4)
+         cap = 1.5 * max(y))
 ```
 
 ```{r}

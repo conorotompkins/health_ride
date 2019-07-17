@@ -1,8 +1,10 @@
 ---
-title: "predicting Healthy Ride ridership with {prophet}"
+title: "predicting Healthy Ride ridership with prophet"
 author: "Conor Tompkins"
 date: "6/21/2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 This post is about predicting demand for the Healthy Ride bike system in Pittsburgh. I wanted to try out Facebook's `prophet` package and try to do some time series forecasting.
@@ -19,7 +21,6 @@ library(tidyverse)
 library(lubridate)
 library(prophet)
 library(janitor)
-library(hrbrthemes)
 
 options(scipen = 999)
 
@@ -38,21 +39,32 @@ The data I will use contains the number of rides per day and also includes the m
 df <- df %>% 
   count(date) %>% 
   rename(ds = date,
-         y = n)
+         y = n) %>% 
+  mutate(floor = 0,
+         cap = 10^4)
 ```
 
 ```{r}
 glimpse(df)
 ```
 
+This creates the set of holidays I use in the model.
+```{r}
+us_holidays <- prophet::generated_holidays %>% 
+  as_tibble() %>% 
+  filter(country == "US")
+```
+
 This code fits a model to the dataset.
 ```{r}
-m <- prophet(df)
+m <- prophet(df, growth = 'logistic', holidays = us_holidays)
 ```
 
 `make_future_dataframe()` creates the dataframe that `prophet` uses to make its forecast. In this case, I have it create a dataframe with 365 days of additional rows to predict onto.
 ```{r}
-future <- make_future_dataframe(m, periods = 365, freq = "day")
+future <- make_future_dataframe(m, periods = 365, freq = "day") %>% 
+  mutate(floor = 0,
+         cap = 10^4)
 ```
 
 This code performs the forecast on the future dataset.

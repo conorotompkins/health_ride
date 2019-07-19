@@ -34,7 +34,7 @@ source("scripts/load_data.R")
 
 The data I will use contains the number of rides per day and also includes the month and year. `prophet` will identify the time series patterns ("seasonality") in the data and identify the "true" pattern
 
-`prophet` has a plug-and-play workflow that is easy to use, but it has more stringent requirements for how the data has to be shaped. The date data has to be named `ds` and the target variable has to be named `y`. 
+`prophet` has a plug-and-play workflow that is easy to use, but it has more stringent requirements for how the data has to be shaped. The date data has to be named `ds` and the target variable has to be named `y`. I set the floor to zero because there cannot be fewer than 0 rides in a day. `prophet` requires a cap
 ```{r}
 df <- df %>% 
   count(date) %>% 

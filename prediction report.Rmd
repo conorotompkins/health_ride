@@ -87,3 +87,21 @@ plot(m, forecast)
 ```{r}
 prophet_plot_components(m, forecast)
 ```
+
+```{r}
+df_cv <- cross_validation(m, horizon = 30, units = 'days')
+```
+
+```{r}
+performance_metrics(df_cv) %>% 
+  as_tibble() %>% 
+  gather(metric, measure, -horizon) %>% 
+  ggplot(aes(horizon, measure)) +
+  geom_line() +
+  facet_wrap(~metric, scales = "free_y",
+             ncol = 1)
+```
+
+##Documentation and references
+
+* https://facebook.github.io/prophet/
